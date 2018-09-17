@@ -4,7 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from tensorflow.examples.tutorials.mnist import input_data
 
-def run_notebook():
+def run_example():
     mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
     print('Training image data: ', mnist.train.images.shape)
     print('Testing image data: ', mnist.test.images.shape)
@@ -31,4 +31,4 @@ if __name__ == '__main__':
     # print(np.matmul(r, loss))
     # print(loss)
 
-    run_notebook()
+    run_example()
