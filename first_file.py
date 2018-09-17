@@ -24,23 +24,24 @@ def run_example():
     plt.show()
 
 
-def run_test():
-    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
-
-    minibatch_size = 100
+def run_train(minibatch_size=500, max_iterations=200, step_size=0.1):
+    # minibatch_size = 500
     data_minibatch = mnist.train.next_batch(minibatch_size)
-    max_iterations = 20
-    step_size = 0.01
+
+    # max_iterations = 200  # choose the max number of iterations
+    # step_size = 0.1  # choose your step size
     W = np.random.rand(10, 784)  # choose your starting parameters (connection weights)
     b = np.random.rand(10, )  # choose your starting parameters (biases)
     training_loss_history = []
     for iter in range(0, max_iterations):
+        # current_data=mnist.train.next_batch(1)
+        # note you need to change this to your preferred data format.
         current_parameters = [W, b]
         W_grad, b_grad = lr_gradient(current_parameters, data_minibatch)
         training_loss_history.append(lr_loss(current_parameters, data_minibatch))
         W = W - step_size * W_grad
         b = b - step_size * b_grad
-    print(training_loss_history)
+    return W, b
 
 
 def lr_gradient(current_parameters, data_minibatch):
@@ -85,7 +86,33 @@ def softmax(gamma):
     return numerator / (1.0 * denominator)
 
 
+def run_test(W, b):
+    data_minibatch = mnist.test.next_batch(1000)
+    x = data_minibatch[0]
+    r = data_minibatch[1]
+    N = x.shape[0]
+    accuracy = 0
+    for i in range(N):
+        prediction = softmax(np.matmul(W, x[i]) + b)
+        if np.argmax(prediction) == np.argmax(r[i]):
+            accuracy += 1
+    accuracy /= (1.0 * N)
+    return accuracy
+
+
 if __name__ == '__main__':
     tf.logging.set_verbosity(tf.logging.ERROR)
-    # run_example()
-    run_test()
+    mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+
+    history = []
+    for minibatch_size in [500, 1000]:
+        for max_iterations in [500, 1000]:
+            for step_size in [4, 2, 1, 0.5]:
+                W_train, b_train = run_train(minibatch_size, max_iterations, step_size)
+                acc = run_test(W_train, b_train)
+                print(acc, minibatch_size, max_iterations, step_size)
+                history.append([acc, minibatch_size, max_iterations, step_size])
+
+    list.sort(history, key=lambda h: h[0], reverse=True)
+    print('Best config: {}'.format(history[:5]))
+
